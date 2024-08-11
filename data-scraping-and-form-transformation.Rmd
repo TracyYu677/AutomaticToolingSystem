@@ -1,0 +1,198 @@
+---
+title: "data scraping and form transformation"
+author: "Xieqing Yu"
+date: "2024-07-26"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  latex_engine: xelatex
+  pdf_document: null
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+library("officer")
+library("stringr")
+```
+
+```{r}
+doc <- read_docx(path = "/Users/xieqingyu/Desktop/微茗智能科技有限公司学习资料/数据分析3.docx")
+doc_text <- docx_summary(doc)
+d1 <- data.frame(时间=rep(NA,692),负载值=rep(NA,692),倍率=rep(NA,692),组数=rep(NA,692))
+list_new <- rep(NA,23)
+d1$倍率[1:692] <- 100
+count <- 1
+for(i in 1:692){
+  if(grepl("TO_ProgramSingle",doc_text$text[i])=="TRUE"){
+     list_new[count]<- i
+     count=count+1
+  }
+}
+list_new2 <-rep(NA,11)
+list_new2[1:11] <- list_new[c(1,3,5,7,9,11,13,15,17,19,21)]
+d1$组数[1:(1+(23-2+1)-1)] <-1
+d1$组数[23:(23+(88-26+1)-1)] <-2
+d1$组数[86:(86+(154-91+1)-1)] <- 3
+d1$组数[150:(150+(218-157+1)-1)] <- 4
+d1$组数[212:(212+(290-221+1)-1)] <- 5
+d1$组数[282:(282+(353-293+1)-1)] <- 6
+d1$组数[343:(343+(419-356+1)-1)] <- 7
+d1$组数[407:(407+(491-422+1)-1)] <- 8
+d1$组数[477:(477+(558-494+1)-1)] <- 9
+d1$组数[542:(542+(625-561+1)-1)] <- 10
+d1$组数[607:(607+(689-628+1)-1)] <- 11
+d1 <- d1[1:668,]
+#倍率是100之下：
+for(i in 1:22){
+  d1$时间[i] <- str_extract(doc_text$text[i+1], "07-25T([^<>]+)Z\"", group = 1)
+  d1$负载值[i] <- str_extract(doc_text$text[i+1],"value\":([^<>]+),\"status", group = 1)
+} 
+for(i in 23:85){
+   d1$时间[i] <- str_extract(doc_text$text[i+3], "07-25T([^<>]+)Z\"", group = 1)
+  d1$负载值[i] <- str_extract(doc_text$text[i+3],"value\":([^<>]+),\"status", group = 1)
+}
+for(i in 86:149){
+  d1$时间[i] <- str_extract(doc_text$text[i+5], "07-25T([^<>]+)Z\"", group = 1)
+  d1$负载值[i] <- str_extract(doc_text$text[i+5],"value\":([^<>]+),\"status", group = 1)
+}
+for(i in 150:211){
+  d1$时间[i] <- str_extract(doc_text$text[i+7], "07-25T([^<>]+)Z\"", group = 1)
+  d1$负载值[i] <- str_extract(doc_text$text[i+7],"value\":([^<>]+),\"status", group = 1)
+}
+for(i in 212:281){
+  d1$时间[i] <- str_extract(doc_text$text[i+9], "07-25T([^<>]+)Z\"", group = 1)
+  d1$负载值[i] <- str_extract(doc_text$text[i+9],"value\":([^<>]+),\"status", group = 1)
+}
+for(i in 282:342){
+  d1$时间[i] <- str_extract(doc_text$text[i+11], "07-25T([^<>]+)Z\"", group = 1)
+  d1$负载值[i] <- str_extract(doc_text$text[i+11],"value\":([^<>]+),\"status", group = 1)
+}
+for(i in 343:406){
+  d1$时间[i] <- str_extract(doc_text$text[i+13], "07-25T([^<>]+)Z\"", group = 1)
+  d1$负载值[i] <- str_extract(doc_text$text[i+13],"value\":([^<>]+),\"status", group = 1)
+}
+for(i in 407:476){
+  d1$时间[i] <- str_extract(doc_text$text[i+15], "07-25T([^<>]+)Z\"", group = 1)
+  d1$负载值[i] <- str_extract(doc_text$text[i+15],"value\":([^<>]+),\"status", group = 1)
+}
+for(i in 477:541){
+  d1$时间[i] <- str_extract(doc_text$text[i+17], "07-25T([^<>]+)Z\"", group = 1)
+  d1$负载值[i] <- str_extract(doc_text$text[i+17],"value\":([^<>]+),\"status", group = 1)
+}
+for(i in 542:606){
+  d1$时间[i] <- str_extract(doc_text$text[i+19], "07-25T([^<>]+)Z\"", group = 1)
+  d1$负载值[i] <- str_extract(doc_text$text[i+19],"value\":([^<>]+),\"status", group = 1)
+}
+for(i in 607:668){
+  d1$时间[i] <- str_extract(doc_text$text[i+21], "07-25T([^<>]+)Z\"", group = 1)
+  d1$负载值[i] <- str_extract(doc_text$text[i+21],"value\":([^<>]+),\"status", group = 1)
+}
+
+d1$时间 <- as.numeric(substr(d1$时间,start=2,stop=2))*3600+60*as.numeric(substr(d1$时间,start=4,stop=5))+as.numeric(substr(d1$时间,start=7,stop=16))
+for(i in 2:22){
+  d1$时间[i] <- d1$时间[i]-d1$时间[1]
+}
+for(i in 24:85){
+   d1$时间[i] <- d1$时间[i]-d1$时间[23]
+}
+for(i in 87:149){
+   d1$时间[i] <- d1$时间[i]-d1$时间[86]
+}
+for(i in 151:211){
+   d1$时间[i] <- d1$时间[i]-d1$时间[150]
+}
+for(i in 213:281){
+   d1$时间[i] <- d1$时间[i]-d1$时间[212]
+}
+for(i in 283:342){
+   d1$时间[i] <- d1$时间[i]-d1$时间[282]
+}
+for(i in 344:406){
+   d1$时间[i] <- d1$时间[i]-d1$时间[343]
+}
+for(i in 408:476){
+   d1$时间[i] <- d1$时间[i]-d1$时间[407]
+}
+for(i in 478:541){
+   d1$时间[i] <- d1$时间[i]-d1$时间[477]
+}
+for(i in 543:606){
+   d1$时间[i] <- d1$时间[i]-d1$时间[542]
+}
+for(i in 608:668){
+   d1$时间[i] <- d1$时间[i]-d1$时间[607]
+}
+d1$时间[c(1,23,86,150,212,282,343,407,477,542,607)] <- 0
+
+# write.csv(d1, file="清洗过的学习数据.csv") 
+
+```
+
+```{r}
+# 倍率是100之下的10组数据的时长平均数：
+length_100 <- (68.064+70.016+69.135+70.078+70.054+69.059+69.023+70.020+70.991+70.056)/10
+
+# 倍率是80之下的10组数据的时长平均数：
+a <- 44*60 + 54.8611603-43*60-26.7906257  #1
+b <- 46*60 + 24.8666583-44*60-58.8446189 #2
+c <- 47*60 + 55.0599622 - 46*60-28.8821972 #3
+d <- 49*60 + 26.0123933 - 47*60 - 58.9298768 #4
+e <- 50*60 + 57.0091418 - 49*60 - 28.9593726 #5                        
+f <- 52*60 + 28.0824247 - 50*60 - 59.978594 #6
+g <- 54*60 + 0.1086872 - 52*60 - 31.0779688 #7
+h <- 55*60 + 30.1293482 - 54*60 - 3.1001296   #8
+i <- 57*60 + 0.1831783 - 55*60 - 33.1461023   #9
+j <- 58*60 + 30.2662519 - 57*60 -  4.2213062    #10
+length_80 <- (a+b+c+d+e+f+g+h+i+j)/10
+```
+
+```{r}
+# 测试数据的总时间长度：
+4*60 + 53.2793262 - 3*60 - 43.2432194
+# 倍率是120之下的5组数据的时长平均数：
+f <- 23*60 + 57.978727 - 22*60 - 59.9634108
+g <- 24*60 + 58.9759588 - 24*60 - 0.9709559
+h <- 26*60 + 0.0028532 - 25*60 - 1.9981164
+i <- 27*60 + 0.9987499 - 26*60 - 4.0138858
+j <- 28*60 + 2.0178668 - 27*60 - 5.0248097
+length_120 <- (f+g+h+i+j)/5
+   
+# 倍率是90之下的5组数据的时长平均数:
+a <- 9*60 + 54.3042642 - 8*60 - 34.2700071
+b <- 11*60 + 17.3842062 - 9*60 - 57.2984944
+c <- 12*60 + 40.5525469 - 11*60 - 21.4065578
+d <- 14*60 + 3.6520738 - 12*60 - 43.5501806
+e <- 15*60 + 26.7540227 - 14*60 - 6.8877325
+length_90 <- (a + b + c + d + e)/5
+# 倍率是105 之下的 3 组数据的时长平均数：
+x <- 42*60 + 27.9141487 - 41*60 - 19.8497364
+y <- 43*60 + 39.902844 - 42*60 - 31.9094029
+z <- 44*60 + 52.9406081 - 43*60 - 43.9197452
+length_105 <- (x+y+z)/3
+
+# 倍率是110之下的3组数据的时长平均数：
+o <- 49*60 + 46.8357163 - 48*60 - 40.8083367
+p <- 50*60 + 55.85786 - 49*60 - 49.8284271
+q <- 28*60 + 51.7234246- 27*60 - 45.6742865
+length_110 <- (o+p+q)/3
+
+# 倍率是115下的3组数据的时长平均数：
+r <- 11*60 + 57.1979241 - 10*60 - 54.107953
+s <- 13*60 + 2.2847386 - 12*60 - 0.2023565
+t <- 14*60 + 8.368889 - 13*60 - 6.3012099
+length_115 <- (r+s+t)/3
+
+# 平均用时与进给倍率的关系散点图：
+plot(c(80,90,100,105,110,115,120),c(length_80,length_90,length_100,length_105,length_110,length_115,length_120))
+x <- c(80,90,100,105,110,115,120)
+y <- c(length_80,length_90,length_100,length_105,length_110,length_115,length_120)
+data=data.frame(x=x,y=y)
+lm(y~x, data=data)
+# 加工一把刀的总时长和倍率呈线性关系（已验证）接下来可以用来模拟实习加工负载值的学习曲线。
+# y = 144.0422 -0.7182*x
+
+
+```
+
+
